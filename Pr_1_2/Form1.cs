@@ -161,6 +161,7 @@ namespace Pr_1_2
                 }
             }
         }
+
         private void InitializeContextMenu()
         {
             ContextMenuStrip contextMenu = new ContextMenuStrip();
