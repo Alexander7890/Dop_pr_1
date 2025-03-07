@@ -13,6 +13,7 @@ namespace Pr_1_2
         private static string textFilePath = "signatures.txt";
         private static string binaryFilePath = "signatures.bin";
 
+
         public Form1()
         {
             InitializeComponent();
@@ -160,49 +161,44 @@ namespace Pr_1_2
                 }
             }
         }
-        // Ініціалізація контекстного меню
         private void InitializeContextMenu()
         {
             ContextMenuStrip contextMenu = new ContextMenuStrip();
 
+            // Пункт для видалення
             var deleteItem = new ToolStripMenuItem("Видалити запис");
             deleteItem.Click += DeleteSelectedItem;
 
+            // Пункт для копіювання
             var copyItem = new ToolStripMenuItem("Копіювати сигнатуру");
             copyItem.Click += CopySelectedItem;
 
+            // Додавання пунктів в меню
             contextMenu.Items.Add(deleteItem);
             contextMenu.Items.Add(copyItem);
             listBox1.ContextMenuStrip = contextMenu;
         }
 
-        // Видалення обраного запису
+
+        // Видалення запису з інтерфейсу та файлів
         private void DeleteSelectedItem(object sender, EventArgs e)
         {
             if (listBox1.SelectedItem != null)
             {
-                string selectedEntry = listBox1.SelectedItem.ToString().Trim();
-
-                string[] parts = selectedEntry.Split(':');
-                if (parts.Length < 2)
-                {
-                    MessageBox.Show("Невірний формат запису!", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                string filePath = parts[0].Trim();
-
-                listBox1.Items.Remove(selectedEntry);
+                string selectedEntry = listBox1.SelectedItem.ToString();
 
                 SignatureStorage.DeleteFromTextFile(selectedEntry);
 
                 SignatureStorage.DeleteFromBinaryFile(selectedEntry);
 
+                // Видалити вибраний елемент зі списку ListBox
+                listBox1.Items.Remove(selectedEntry);
+
                 MessageBox.Show("Запис успішно видалено!", "Видалення", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
-
+       
         // Копіювання сигнатури в буфер обміну
         private void CopySelectedItem(object sender, EventArgs e)
         {

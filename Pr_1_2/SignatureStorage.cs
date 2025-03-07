@@ -114,67 +114,7 @@ namespace Pr_1_2
             }
             return false;
         }
-        // Видаляє сигнатуру з бази даних
-        public static void DeleteFromTextFile(string entry)
-        {
-            if (!File.Exists(textFilePath)) return;
 
-            var lines = File.ReadAllLines(textFilePath).ToList();
-            lines.RemoveAll(line => line.Equals(entry, StringComparison.OrdinalIgnoreCase));
-            File.WriteAllLines(textFilePath, lines);
-        }
-        // Видаляє сигнатуру з бінарного файлу
-        public static void DeleteFromBinaryFile(string entryToDelete)
-        {
-            if (!File.Exists(binaryFilePath)) return;
-
-            List<byte[]> validRecords = new List<byte[]>();
-
-            using (FileStream fs = new FileStream(binaryFilePath, FileMode.Open, FileAccess.Read))
-            using (BinaryReader reader = new BinaryReader(fs))
-            {
-                while (fs.Position < fs.Length)
-                {
-                    long entryStart = fs.Position;
-
-                    // Читаємо шлях до файлу
-                    int pathLength = reader.ReadInt32();
-                    byte[] pathBytes = reader.ReadBytes(pathLength);
-                    string filePath = Encoding.UTF8.GetString(pathBytes);
-
-                    // Читаємо сигнатуру
-                    int signatureLength = reader.ReadInt32();
-                    byte[] signatureBytes = reader.ReadBytes(signatureLength);
-                    string signature = BitConverter.ToString(signatureBytes).Replace("-", "");
-
-                    string currentEntry = $"{filePath}:{signature}";
-
-                    // Якщо це не запис для видалення, зберігаємо його
-                    if (!currentEntry.Equals(entryToDelete, StringComparison.OrdinalIgnoreCase))
-                    {
-                        using (MemoryStream ms = new MemoryStream())
-                        using (BinaryWriter writer = new BinaryWriter(ms))
-                        {
-                            writer.Write(pathLength);
-                            writer.Write(pathBytes);
-                            writer.Write(signatureLength);
-                            writer.Write(signatureBytes);
-                            validRecords.Add(ms.ToArray());
-                        }
-                    }
-                }
-            }
-
-            // Перезаписуємо файл без видаленого запису
-            using (FileStream fs = new FileStream(binaryFilePath, FileMode.Create, FileAccess.Write))
-            using (BinaryWriter writer = new BinaryWriter(fs))
-            {
-                foreach (var record in validRecords)
-                {
-                    writer.Write(record);
-                }
-            }
-        }
         // Нормалізує вхідну строку до HEX-формату
         public static string NormalizeToHex(string input)
         {
@@ -203,5 +143,65 @@ namespace Pr_1_2
             }
             return bytes;
         }
+
+        // Видаляє сигнатуру з текстового файлу
+        public static void DeleteFromTextFile(string entryToDelete)
+        {
+            if (!File.Exists(textFilePath)) return;
+
+            var lines = File.ReadAllLines(textFilePath).ToList();
+            lines.RemoveAll(line => line.Contains(entryToDelete));
+
+            File.WriteAllLines(textFilePath, lines);
+        }
+
+        // Видаляє сигнатуру з бінарного файлу
+        public static void DeleteFromBinaryFile(string entryToDelete)
+        {
+            if (!File.Exists(binaryFilePath)) return;
+
+            List<byte> updatedData = new List<byte>();
+
+            using (FileStream fs = new FileStream(binaryFilePath, FileMode.Open, FileAccess.Read))
+            using (BinaryReader reader = new BinaryReader(fs))
+            {
+                while (fs.Position < fs.Length)
+                {
+                    // Читаємо довжину та шлях файлу
+                    int filePathLength = reader.ReadInt32();
+                    byte[] filePathBytes = reader.ReadBytes(filePathLength);
+                    string filePath = Encoding.UTF8.GetString(filePathBytes);
+
+                    // Читаємо довжину та значення сигнатури
+                    int signatureLength = reader.ReadInt32();
+                    byte[] signatureBytes = reader.ReadBytes(signatureLength);
+                    string signatureHex = BitConverter.ToString(signatureBytes).Replace("-", "");
+
+                    // Формуємо рядковий запис для перевірки
+                    string currentEntry = $"{filePath}:{signatureHex}";
+
+                    // Якщо запис не збігається з entryToDelete, зберігаємо його
+                    if (!currentEntry.Equals(entryToDelete, StringComparison.OrdinalIgnoreCase))
+                    {
+                        updatedData.AddRange(BitConverter.GetBytes(filePathLength));
+                        updatedData.AddRange(filePathBytes);
+                        updatedData.AddRange(BitConverter.GetBytes(signatureLength));
+                        updatedData.AddRange(signatureBytes);
+                    }
+                }
+            }
+
+            // Якщо всі записи видалені, очищуємо файл
+            if (updatedData.Count == 0)
+            {
+                File.Delete(binaryFilePath);
+            }
+            else
+            {
+                File.WriteAllBytes(binaryFilePath, updatedData.ToArray());
+            }
+        }
+
+
     }
 }
