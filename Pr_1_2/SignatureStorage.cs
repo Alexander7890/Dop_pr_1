@@ -52,7 +52,7 @@ namespace Pr_1_2
         public static void CheckFileForVirus(string filePath, string searchMethod)
         {
             List<string> detectedSignatures = new List<string>();
-            List<string> algorithms = new List<string> { "SHA-1", "SHA-256", "SHA-512", "MD5", "CRC-32", "CRC-64", "Сума різниць 1х та 2х байтів", "XOR кожних 5-их байтів", "Сума по модулю 2^64" };
+            List<string> algorithms = new List<string> { "SHA-1", "SHA-256", "SHA-384", "SHA-512", "MD5", "CRC-32", "CRC-64", "Сума різниць 1х та 2х байтів", "XOR кожних 5-их байтів", "Сума по модулю 2^64" };
 
             foreach (string algorithm in algorithms)
             {
