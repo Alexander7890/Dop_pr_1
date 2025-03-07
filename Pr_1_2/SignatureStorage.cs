@@ -9,9 +9,11 @@ namespace Pr_1_2
 {
     public static class SignatureStorage
     {
+        // Шляхи до файлів зі збереженими сигнатурами
         private static string textFilePath = "signatures.txt";
         private static string binaryFilePath = "signatures.bin";
 
+        // Зберігає сигнатуру в файлі
         public static void Save(string filePath, string signature, string format)
         {
             string hexSignature = NormalizeToHex(signature);
@@ -25,13 +27,13 @@ namespace Pr_1_2
                 SaveAsString(filePath, hexSignature);
             }
         }
-
+        // Зберігає сигнатуру в текстовому файлі
         private static void SaveAsString(string filePath, string signature)
         {
             string entry = $"{filePath}:{signature}";
             File.AppendAllText(textFilePath, entry + Environment.NewLine);
         }
-
+        // Зберігає сигнатуру в бінарному файлі
         private static void SaveAsBinary(string filePath, string signature)
         {
             using (FileStream fs = new FileStream(binaryFilePath, FileMode.Append, FileAccess.Write))
@@ -46,7 +48,7 @@ namespace Pr_1_2
                 writer.Write(signatureBytes);
             }
         }
-
+        // Перевіряє файл на віруси
         public static void CheckFileForVirus(string filePath, string searchMethod)
         {
             List<string> detectedSignatures = new List<string>();
@@ -73,7 +75,7 @@ namespace Pr_1_2
                                 "Перевірка завершена", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
-
+        // Перевіряє, чи є сигнатура в базі даних
         public static bool IsSignatureInDatabase(string signature, string searchMethod, out string usedMethod)
         {
             usedMethod = searchMethod;
@@ -88,7 +90,7 @@ namespace Pr_1_2
 
             return foundInText || foundInBinary;
         }
-
+        // Пошук сигнатури в бінарному файлі
         private static bool SearchInBinaryFile(string targetSignature)
         {
             byte[] targetBytes = ConvertHexStringToByteArray(targetSignature);
@@ -112,7 +114,7 @@ namespace Pr_1_2
             }
             return false;
         }
-
+        // Видаляє сигнатуру з бази даних
         public static void DeleteFromTextFile(string entry)
         {
             if (!File.Exists(textFilePath)) return;
@@ -121,7 +123,7 @@ namespace Pr_1_2
             lines.RemoveAll(line => line.Equals(entry, StringComparison.OrdinalIgnoreCase));
             File.WriteAllLines(textFilePath, lines);
         }
-
+        // Видаляє сигнатуру з бінарного файлу
         public static void DeleteFromBinaryFile(string entryToDelete)
         {
             if (!File.Exists(binaryFilePath)) return;
@@ -173,15 +175,7 @@ namespace Pr_1_2
                 }
             }
         }
-
-
-
-
-
-
-
-
-
+        // Нормалізує вхідну строку до HEX-формату
         public static string NormalizeToHex(string input)
         {
             if (System.Text.RegularExpressions.Regex.IsMatch(input, @"\A\b[0-9A-Fa-f]+\b\Z") && input.Length % 2 == 0)
@@ -196,7 +190,7 @@ namespace Pr_1_2
 
             return BitConverter.ToString(Encoding.UTF8.GetBytes(input)).Replace("-", "");
         }
-
+        // Перетворює HEX-строку в масив байтів
         public static byte[] ConvertHexStringToByteArray(string hex)
         {
             if (hex.Length % 2 != 0)

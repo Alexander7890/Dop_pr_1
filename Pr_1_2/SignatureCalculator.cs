@@ -8,12 +8,6 @@ namespace Pr_1_2
 {
     public static class SignatureCalculator
     {
-        public static void CalculateAndSave(string filePath, string algorithm, string format)
-        {
-            string signature = Calculate(filePath, algorithm);
-            SignatureStorage.Save(Path.GetFileName(filePath), signature, format);
-        }
-
         public static string Calculate(string filePath, string algorithm)
         {
             switch (algorithm)
@@ -21,7 +15,7 @@ namespace Pr_1_2
                 case "Сума по модулю 2^64":
                     return SumMod64(filePath).ToString();
                 case "XOR кожних 5-их байтів":
-                    return ComputeXOREvery5thByte(filePath).ToString("X16"); // Вивід у HEX-форматі
+                    return ComputeXOREvery5thByte(filePath).ToString("X16");
                 case "Сума різниць 1х та 2х байтів":
                     return ComputeSumDifferences(filePath).ToString();
                 case "SHA-1":

@@ -30,7 +30,7 @@ namespace Pr_1_2
                 "MD5", "SHA-1", "SHA-256", "SHA-384", "SHA-512", "RIPE-MD", "CRC-64", "CRC-32",
                 "Сума по модулю 2^64", "XOR кожних 5-их байтів", "Сума різниць 1х та 2х байтів"
             });
-                        // Встановлення значень за замовчуванням
+            // Встановлення значень за замовчуванням
             comboBoxStorageFormat.SelectedIndex = 1;  // String
             comboBoxSearchAlgorithm.SelectedIndex = 0;  // Лінійний пошук
             comboBoxSignatureAlgorithm.SelectedIndex = 8;  // Сума по модулю 2^64
@@ -42,18 +42,16 @@ namespace Pr_1_2
         {
             listBox1.Items.Clear();
 
-            // Читаємо всі рядки з текстового файлу (String)
             if (File.Exists(textFilePath))
             {
                 var lines = File.ReadAllLines(textFilePath);
                 foreach (var line in lines)
                 {
                     if (!string.IsNullOrWhiteSpace(line))
-                        listBox1.Items.Add(line); // Додаємо кожен рядок окремо
+                        listBox1.Items.Add(line);
                 }
             }
 
-            // Читаємо всі записи з бінарного файлу (Binary)
             if (File.Exists(binaryFilePath))
             {
                 using (FileStream fs = new FileStream(binaryFilePath, FileMode.Open, FileAccess.Read))
@@ -69,10 +67,10 @@ namespace Pr_1_2
                             int signatureLength = reader.ReadInt32();
                             string signature;
 
-                            if (signatureLength == sizeof(ulong)) // Якщо це число, конвертуємо
+                            if (signatureLength == sizeof(ulong)) 
                             {
                                 ulong signatureValue = reader.ReadUInt64();
-                                signature = signatureValue.ToString("X16"); // Виправлення: виводимо у вигляді 16-значного HEX
+                                signature = signatureValue.ToString("X16");
                             }
 
                             else
@@ -81,7 +79,6 @@ namespace Pr_1_2
                                 signature = BitConverter.ToString(signatureBytes).Replace("-", "").ToLower();
                             }
 
-                            // Додаємо новий запис в listBox окремим рядком
                             listBox1.Items.Add($"{filePath}:{signature}");
                         }
                         catch (Exception ex)
@@ -140,7 +137,7 @@ namespace Pr_1_2
             }
         }
 
-
+        // Пошук в словнику
         private void button3_Click_1(object sender, EventArgs e)
         {
             if (comboBoxSearchAlgorithm.SelectedItem == null)
@@ -163,32 +160,29 @@ namespace Pr_1_2
                 }
             }
         }
-
+        // Ініціалізація контекстного меню
         private void InitializeContextMenu()
         {
             ContextMenuStrip contextMenu = new ContextMenuStrip();
 
-            // Пункт для видалення
             var deleteItem = new ToolStripMenuItem("Видалити запис");
             deleteItem.Click += DeleteSelectedItem;
 
-            // Пункт для копіювання
             var copyItem = new ToolStripMenuItem("Копіювати сигнатуру");
             copyItem.Click += CopySelectedItem;
 
-            //Додавання пунктів в меню
             contextMenu.Items.Add(deleteItem);
             contextMenu.Items.Add(copyItem);
             listBox1.ContextMenuStrip = contextMenu;
         }
 
+        // Видалення обраного запису
         private void DeleteSelectedItem(object sender, EventArgs e)
         {
             if (listBox1.SelectedItem != null)
             {
                 string selectedEntry = listBox1.SelectedItem.ToString().Trim();
 
-                // Розділяємо запис "filePath:signature" на дві частини
                 string[] parts = selectedEntry.Split(':');
                 if (parts.Length < 2)
                 {
@@ -196,15 +190,12 @@ namespace Pr_1_2
                     return;
                 }
 
-                string filePath = parts[0].Trim(); // Видаляємо зайві пробіли
+                string filePath = parts[0].Trim();
 
-                // Видаляємо з ListBox
                 listBox1.Items.Remove(selectedEntry);
 
-                // Видаляємо з текстового файлу
                 SignatureStorage.DeleteFromTextFile(selectedEntry);
 
-                // Видаляємо з бінарного файлу тільки за filePath
                 SignatureStorage.DeleteFromBinaryFile(selectedEntry);
 
                 MessageBox.Show("Запис успішно видалено!", "Видалення", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -212,19 +203,16 @@ namespace Pr_1_2
         }
 
 
-
+        // Копіювання сигнатури в буфер обміну
         private void CopySelectedItem(object sender, EventArgs e)
         {
             if (listBox1.SelectedItem != null)
             {
-                // Отримуємо вибрану запис з listBox
                 string selectedEntry = listBox1.SelectedItem.ToString();
 
-                // Витягти сигнатуру з запису (припускаємо, що сигнатура завжди після двокрапки)
                 int signatureStartIndex = selectedEntry.LastIndexOf("🔑 Сигнатура:") + "🔑 Сигнатура:".Length;
                 string signature = selectedEntry.Substring(signatureStartIndex).Trim();
 
-                // Копіюємо сигнатуру в буфер обміну
                 Clipboard.SetText(signature);
 
                 MessageBox.Show("Сигнатура скопійована в буфер обміну!", "Копіювання", MessageBoxButtons.OK, MessageBoxIcon.Information);
