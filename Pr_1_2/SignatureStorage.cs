@@ -12,7 +12,7 @@ namespace Pr_1_2
     {
         private static string textFilePath = "signatures.txt";
         private static string binaryFilePath = "signatures.bin";
-
+        // Метод, який зберігає сигнатуру
         public static void Save(string filePath, string signature, string format)
         {
             string hexSignature = NormalizeToHex(signature);
@@ -25,13 +25,13 @@ namespace Pr_1_2
                 SaveAsString(filePath, hexSignature);
             }
         }
-
+        // Метод, який зберігає сигнатуру у текстовому файлі
         private static void SaveAsString(string filePath, string signature)
         {
             string entry = $"{filePath}:{signature}";
             File.AppendAllText(textFilePath, entry + Environment.NewLine);
         }
-
+        // Метод, який зберігає сигнатуру у бінарному файлі
         private static void SaveAsBinary(string filePath, string signature)
         {
             using (FileStream fs = new FileStream(binaryFilePath, FileMode.Append, FileAccess.Write))
@@ -45,7 +45,7 @@ namespace Pr_1_2
                 writer.Write(signatureBytes);
             }
         }
-
+        // Метод, який перевіряє файл на віруси
         public static void CheckFileForVirus(string filePath, string searchMethod)
         {
             List<string> detectedSignatures = new List<string>();
@@ -62,12 +62,13 @@ namespace Pr_1_2
 
             MessageBox.Show(detectedSignatures.Count > 0 ? $"⚠️ Файл {Path.GetFileName(filePath)} інфікований!\nМетод пошуку: {searchMethod}\n\nЗбіги:\n" + string.Join("\n", detectedSignatures) : $"✔️ Файл {Path.GetFileName(filePath)} безпечний.\nМетод пошуку: {searchMethod}", "Результат", MessageBoxButtons.OK, detectedSignatures.Count > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
         }
-
+        
         public static bool IsSignatureInDatabase(string signature, string searchMethod, out string usedMethod)
         {
             return IsSignatureInDatabase(signature, searchMethod, out usedMethod, out _);
         }
 
+        //Метод, який перевіряє, чи є сигнатура в базі даних
         public static bool IsSignatureInDatabase(string signature, string searchMethod, out string usedMethod, out double elapsedTime)
         {
             usedMethod = searchMethod;
@@ -102,7 +103,7 @@ namespace Pr_1_2
             elapsedTime = stopwatch.Elapsed.TotalMilliseconds;
             return found;
         }
-
+        //Метод, який виконує лінійний пошук з бар'єром
         private static bool LinearSearchWithBarrier(List<string> list, string target)
         {
             list.Add(target);
@@ -114,7 +115,7 @@ namespace Pr_1_2
             list.RemoveAt(list.Count - 1);
             return i < list.Count;
         }
-
+        //Метод, який виконує пошук у бінарному файлі
         private static bool SearchInBinaryFile(string targetSignature)
         {
             byte[] targetBytes = ConvertHexStringToByteArray(targetSignature);
@@ -132,7 +133,7 @@ namespace Pr_1_2
             }
             return false;
         }
-
+        // Метод, який нормалізує вхідну строку до шістнадцяткового формату
         public static string NormalizeToHex(string input)
         {
             if (System.Text.RegularExpressions.Regex.IsMatch(input, "\\A\\b[0-9A-Fa-f]+\\b\\Z") && input.Length % 2 == 0)
@@ -145,7 +146,7 @@ namespace Pr_1_2
             }
             return BitConverter.ToString(Encoding.UTF8.GetBytes(input)).Replace("-", "");
         }
-
+        // Метод, який конвертує шістнадцятковий рядок у масив байтів
         public static byte[] ConvertHexStringToByteArray(string hex)
         {
             if (hex.Length % 2 != 0) throw new ArgumentException("Некорректная HEX-строка");
